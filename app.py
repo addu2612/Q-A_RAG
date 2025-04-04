@@ -8,13 +8,21 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.document_loaders import WebBaseLoader
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
-from langchain.vectorstores import Chroma
+from langchain.vectorstores import FAISS  # Changed from Chroma to FAISS
 
-# Load environment variables
-#load_dotenv()
+# Load environment variables (for local development)
+load_dotenv()
 
-# Get the API key from the environment
-api_key = st.secrets["GOOGLE_API_KEY"]
+# Get the API key from environment or Streamlit secrets
+api_key = os.getenv("GOOGLE_API_KEY")
+
+# If not found and we're on Streamlit Cloud, try to get from secrets
+if not api_key and 'GOOGLE_API_KEY' in st.secrets:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+
+if not api_key:
+    st.error("Google API Key not found. Please set it in your environment variables or Streamlit secrets.")
+    st.stop()
 
 # Custom CSS for orange and white theme with forced light mode
 orange_white_theme = """
@@ -257,7 +265,8 @@ with st.sidebar:
                                 st.error(f"Error processing URL {url}: {str(e)}")
                     
                     if all_pages:
-                        st.session_state.vectordb = Chroma.from_documents(all_pages, embeddings)
+                        # Changed from Chroma to FAISS
+                        st.session_state.vectordb = FAISS.from_documents(all_pages, embeddings)
                         st.session_state.retriever = st.session_state.vectordb.as_retriever(search_kwargs={"k": 3})
                         st.session_state.documents_processed = True
                         
@@ -348,4 +357,3 @@ st.markdown("""
     <p style="color: #FF6600; font-size: 0.8em; font-weight: bold;">Note: Maximum document size: 8k tokens</p>
 </div>
 """, unsafe_allow_html=True)
-
