@@ -11,10 +11,10 @@ from langchain.chains.retrieval import create_retrieval_chain
 from langchain.vectorstores import Chroma
 
 # Load environment variables
-load_dotenv()
+#load_dotenv()
 
 # Get the API key from the environment
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = st.secrets["GOOGLE_API_KEY"]
 
 # Custom CSS for orange and white theme with forced light mode
 orange_white_theme = """
